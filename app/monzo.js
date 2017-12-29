@@ -74,7 +74,7 @@ function getBalance() {
       },
       function(err, res, body) {
         let data, text, card;
-
+        console.log(body);
         if (err || res.statusCode >= 400) {
           console.error(res.statusCode, err);
           return reject("Unable to get balance!");
@@ -98,6 +98,7 @@ function getBalance() {
 }
 
 function getBalanceText(data) {
+  console.log(data);
   let conditions;
 
   if (data.balance) {

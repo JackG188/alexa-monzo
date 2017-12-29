@@ -103,7 +103,7 @@ function getBalanceText(data) {
   let conditions;
 
   if (data.balance) {
-    const amountParts = (amount / 100)
+    const amountParts = (data.balance / 100)
       .toFixed(2)
       .toString()
       .split(".");

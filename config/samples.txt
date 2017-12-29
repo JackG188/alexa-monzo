@@ -1,0 +1,4 @@
+
+Balance  what's my balance
+Balance  how much money do I have
+Balance  whats in my account

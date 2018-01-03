@@ -86,7 +86,7 @@ function getTransactions(transactionAmount) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_000097O438ahiqClRKOtU1",
+        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
         headers: {
           Authorization: `Bearer ${access_token}`
         },
@@ -161,7 +161,7 @@ function getBalance() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + "balance?account_id=acc_000097O438ahiqClRKOtU1",
+        url: BASE_URL + "balance?account_id=acc_00009RwlYFxmBrRmHYTLKz",
         headers: {
           Authorization: `Bearer ${access_token}`
         },

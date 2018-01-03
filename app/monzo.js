@@ -151,8 +151,8 @@ function getTransactionsText(data, transactionAmount) {
         else {
           transactionText = `You spent ${getCashText(Math.abs(amountSpend))} at ${transaction.description} on ${transaction.created} `;
         }
-
-        transactionsText = +transactionText;
+        console.log(transactionText);
+        transactionsText += transactionText;
     });
   }
 

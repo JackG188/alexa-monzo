@@ -138,6 +138,10 @@ function getTransactionsText(data, transactionAmount) {
         if (transaction.description === 'Top up'){
           transactionText = `You Topped Up ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
         }
+        else if (transaction.category === 'mondo') {
+          // Catch for balance transfer between account types
+          continue;
+        }
         else if (Object.keys(transaction.counterparty).length > 0) {
           if (transaction.amount > 0) {
             transactionText = `You got ${getCashText(amountSpend)} from ${transaction.counterparty.prefered_name} on ${dateFormatter(transaction.created)}. `;

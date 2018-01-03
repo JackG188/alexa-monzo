@@ -3,7 +3,7 @@
 let request = require("request");
 
 const VERSION = "1.0";
-const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTQ5OTUxOTgsImlhdCI6MTUxNDk3MzU5OCwianRpIjoidG9rXzAwMDA5U0RPa3Nwc1VmYzhocGtBRUwiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.otfU7Kvj8AoabbRwrgtxVNp6q7h193_xG2oIg2wHc7g"
+const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTUwMjA5MjIsImlhdCI6MTUxNDk5OTMyMiwianRpIjoidG9rXzAwMDA5U0UxMThTYnh2cDBQV1JVcmgiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.1qlwExhsmXmnDvUjGfHfMmvtDtHtj5rsJhks13dR2Pw"
 const BASE_URL = "https://api.monzo.com/";
 
 module.exports = function(req, res) {

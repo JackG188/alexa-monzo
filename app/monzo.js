@@ -38,7 +38,27 @@ module.exports = function(req, res) {
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
-  } else {
+  } 
+  else if (
+    req.body.request.type === "IntentRequest" &&
+    req.body.request.intent.name === "Transactions"
+  ) {
+    getTransactions(req.body.request.intent.slots.amount.value)
+      .then(function(transactions) {
+        res.json(
+          buildResponse(
+            {},
+            "<speak>" + transactions.text + "</speak>",
+            transactions.card,
+            true
+          )
+        );
+      })
+      .catch(function(err) {
+        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
+      });
+  }
+  else {
     res
       .status(504)
       .json({
@@ -151,7 +171,7 @@ function getBalance() {
       },
       function(err, res, body) {
         let data, text, card;
-        console.log(body);
+        console.log('in get balance', body);
         data = body;
         if (err || res.statusCode >= 400) {
           console.error(res.statusCode, err);
@@ -176,7 +196,7 @@ function getBalance() {
 }
 
 function getBalanceText(data) {
-  console.log(data);
+  console.log('in get balance', data);
   let conditions;
 
   if (data.balance) {

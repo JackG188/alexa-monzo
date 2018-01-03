@@ -127,16 +127,15 @@ function getTransactions(transactionAmount) {
 }
 
 function getTransactionsText(data, transactionAmount) {
-  console.log(data);
   let transactionsText;
 
   if (data.transactions) {
     let lastSetOfTransactions = data.transactions.slice((data.transactions.length - transactionAmount), data.transactions.length);
-    console.log(lastSetOfTransactions);
 
     lastSetOfTransactions.forEach(transaction => {
         let amountSpend = transaction.amount;
         let transactionText = '';
+        console.log(transaction);
         if (transaction.description === 'Top up'){
           transactionText = `You Topped Up ${getCashText(amountSpend)} on ${transaction.created} `;
         }

@@ -136,18 +136,18 @@ function getTransactionsText(data, transactionAmount) {
         let transactionText = '';
         console.log(transaction);
         if (transaction.description === 'Top up'){
-          transactionText = `You Topped Up ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
+          transactionText = `Top Up of ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
         }
         else if (Object.keys(transaction.counterparty).length > 0) {
           if (transaction.amount > 0) {
-            transactionText = `You got ${getCashText(amountSpend)} from ${transaction.counterparty.prefered_name} on ${dateFormatter(transaction.created)}. `;
+            transactionText = `Got Paid ${getCashText(amountSpend)} from ${transaction.counterparty.prefered_name} on ${dateFormatter(transaction.created)}. `;
           }
           else {
             transactionText = `You paid ${transaction.counterparty.prefered_name}, ${getCashText(Math.abs(amountSpend))} on ${dateFormatter(transaction.created)}. `
           }
         }
         else if (transaction.merchant != null && Object.keys(transaction.merchant).length > 0) {
-          transactionText = `You spent ${getCashText(Math.abs(amountSpend))} at ${transaction.merchant.name} on ${dateFormatter(transaction.created)}. `;
+          transactionText = `Spent ${getCashText(Math.abs(amountSpend))} at ${transaction.merchant.name} on ${dateFormatter(transaction.created)}. `;
         }
         console.log(transactionText);
         transactionsText += transactionText;
@@ -241,6 +241,6 @@ const currencyParser = {
 };
 
 const dateFormatter = (date) => {
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
   return new Date(date).toLocaleDateString('en-GB', options);
 }

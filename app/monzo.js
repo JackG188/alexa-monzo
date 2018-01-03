@@ -126,7 +126,7 @@ function getTransactions(transactionAmount) {
 }
 
 function getTransactionsText(data, transactionAmount) {
-  let transactionsText;
+  let transactionsText = '';
 
   if (data.transactions) {
     let lastSetOfTransactions = data.transactions.slice((data.transactions.length - transactionAmount), data.transactions.length).reverse();
@@ -137,9 +137,6 @@ function getTransactionsText(data, transactionAmount) {
         console.log(transaction);
         if (transaction.description === 'Top up'){
           transactionText = `You Topped Up ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
-        }
-        else if (transaction.category === 'mondo') {
-          // Catch for balance transfer between account types
         }
         else if (Object.keys(transaction.counterparty).length > 0) {
           if (transaction.amount > 0) {

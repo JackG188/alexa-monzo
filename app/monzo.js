@@ -246,5 +246,5 @@ const currencyParser = {
 
 const dateFormatter = (date) => {
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('en-GB', options);
+  return new Date(date).toLocaleDateString('en-GB', options);
 }

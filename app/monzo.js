@@ -230,8 +230,8 @@ const getCashText = (cash) => {
         )}`
       );
 
-    conditions = responseParts.join(" and ");
-    return conditions;
+    return responseParts.join(" and ");
+    
 }
 
 const currencyParser = {

@@ -3,7 +3,7 @@
 let request = require("request");
 
 const VERSION = "1.0";
-const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTQ1Nzk5MzQsImlhdCI6MTUxNDU1ODMzNCwianRpIjoidG9rXzAwMDA5UzNSNTFHWDdOSFF5RExFQ3YiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.7jMbPJzBTpPL5ht1jWtE_DVRtOpilbcJDr4p5KET7sw"
+const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTQ5OTUxOTgsImlhdCI6MTUxNDk3MzU5OCwianRpIjoidG9rXzAwMDA5U0RPa3Nwc1VmYzhocGtBRUwiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.otfU7Kvj8AoabbRwrgtxVNp6q7h193_xG2oIg2wHc7g"
 const BASE_URL = "https://api.monzo.com/";
 
 module.exports = function(req, res) {
@@ -62,8 +62,85 @@ function buildResponse(session, speech, card, end) {
   };
 }
 
+function getTransactions(transactionAmount) {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_000097O438ahiqClRKOtU1",
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+        json: true
+      },
+      function(err, res, body) {
+        let data, text, card;
+        console.log(body);
+        data = body;
+        if (err || res.statusCode >= 400) {
+          console.error(res.statusCode, err);
+          return reject("Unable to get transactions!");
+        }
+
+        if (!data) {
+          return reject("Unable to get transactions!");
+        }
+
+        const transactionsText = getTransactionsText(data, transactionAmount);
+
+        if (transactionsText.length > 0) {
+          text = `Your last ${transactionAmount} transactions are: ${transactionsText}`;
+        }
+        else {
+          text = 'Sorry, no transactions available';
+        }
+
+        card = {
+          type: "Standard",
+          title: "Monzo card transactions",
+          text: text
+        };
+
+        resolve({ text, card });
+      }
+    )
+  });
+}
+
+function getTransactionsText(data, transactionAmount) {
+  console.log(data);
+  let transactionsText;
+
+  if (data.transactions) {
+    let lastSetOfTransactions = data.transactions.slice((data.transactions.length - transactionAmount), data.transactions.length);
+    console.log(lastSetOfTransactions);
+
+    lastSetOfTransactions.forEach(transaction => {
+        let amountSpend = transaction.amount;
+        let transactionText = '';
+        if (transaction.description === 'Top up'){
+          transactionText = `You Topped Up ${getCashText(amountSpend)} on ${transaction.created} `;
+        }
+        else if (transaction.counterparty) {
+          if (transaction.amount > 0) {
+            transactionText = `You got ${getCashText(amountSpend)} from ${transaction.counterparty.prefered_name} on ${transaction.created} `;
+          }
+          else {
+            transactionText = `You paid ${transaction.counterparty.prefered_name}, ${getCashText(Math.abs(amountSpend))} on ${transaction.created} `
+          }
+        }
+        else {
+          transactionText = `You spent ${getCashText(Math.abs(amountSpend))} at ${transaction.description} on ${transaction.created} `;
+        }
+
+        transactionsText = +transactionText;
+    });
+  }
+
+  return transactionsText;
+}
+
 function getBalance() {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     request(
       {
         url: BASE_URL + "balance?account_id=acc_000097O438ahiqClRKOtU1",
@@ -85,7 +162,7 @@ function getBalance() {
           return reject("Unable to get balance!");
         }
 
-        text = getBalanceText(data);
+        text = `Your balance is: ${getBalanceText(data)}`;
         card = {
           type: "Standard",
           title: "Monzo card balance",
@@ -103,41 +180,46 @@ function getBalanceText(data) {
   let conditions;
 
   if (data.balance) {
-    const amountParts = (data.balance / 100)
-      .toFixed(2)
-      .toString()
-      .split(".");
-
-    const majorUnits = +amountParts[0];
-    const minorUnits = +amountParts[1];
-
-    const responseParts = [];
-    if (majorUnits !== 0 || minorUnits === 0)
-      responseParts.push(
-        `${majorUnits} ${currencyDefinition["GBP"].majorCurrencyUnit(
-          majorUnits
-        )}`
-      );
-
-    if (minorUnits !== 0 || majorUnits === 0)
-      responseParts.push(
-        `${minorUnits} ${currencyDefinition["GBP"].minorCurrencyUnit(
-          minorUnits
-        )}`
-      );
-
-    conditions = responseParts.join(" and ");
+    conditions = getCashText(data.balance);
   }
 
   return conditions;
 }
 
-const currencyDefinition = {
+const getCashText = (cash) => {
+  const poundsAndPence = (cash / 100)
+      .toFixed(2)
+      .toString()
+      .split(".");
+
+    const pounds = +poundsAndPence[0];
+    const pence = +poundsAndPence[1];
+
+    const responseParts = [];
+    if (pounds !== 0 || pence === 0)
+      responseParts.push(
+        `${pounds} ${currencyParser["GBP"].pounds(
+          pounds
+        )}`
+      );
+
+    if (pence !== 0 || pounds === 0)
+      responseParts.push(
+        `${pence} ${currencyParser["GBP"].pence(
+          pence
+        )}`
+      );
+
+    conditions = responseParts.join(" and ");
+    return conditions;
+}
+
+const currencyParser = {
   GBP: {
-    majorCurrencyUnit(amount) {
+    pounds(amount) {
       return amount === 1 ? "pound" : "pounds";
     },
-    minorCurrencyUnit(amount) {
+    pence(amount) {
       return "pence";
     }
   }

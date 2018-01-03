@@ -10,6 +10,15 @@
       "intent": "Balance",
       "slots": [
       ]
+    },
+    {
+      "intent": "Transactions",
+      "slots": [
+        {
+          "name": "amount",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
     }
   ]
 }

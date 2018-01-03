@@ -2,3 +2,7 @@
 Balance  what's my balance
 Balance  how much money do I have
 Balance  whats in my account
+
+Transactions get my last {amount} transactions
+Transactions show me my last {amount} purchases
+Transactions what's the last {amount} times I used my card

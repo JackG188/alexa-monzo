@@ -147,7 +147,7 @@ function getTransactionsText(data, transactionAmount) {
             transactionText = `You paid ${transaction.counterparty.prefered_name}, ${getCashText(Math.abs(amountSpend))} on ${dateFormatter(transaction.created)}. `
           }
         }
-        else {
+        else if (Object.keys(transaction.merchant).length > 0) {
           transactionText = `You spent ${getCashText(Math.abs(amountSpend))} at ${transaction.merchant.name} on ${dateFormatter(transaction.created)}. `;
         }
         console.log(transactionText);

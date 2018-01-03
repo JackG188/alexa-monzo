@@ -7,9 +7,7 @@
       "intent": "AMAZON.CancelIntent"
     },
     {
-      "intent": "Balance",
-      "slots": [
-      ]
+      "intent": "Balance"
     },
     {
       "intent": "Transactions",
@@ -19,6 +17,9 @@
           "type": "AMAZON.NUMBER"
         }
       ]
+    },
+    {
+      "intent": "LastTopUp"
     }
   ]
 }

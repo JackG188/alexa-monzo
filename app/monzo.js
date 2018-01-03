@@ -58,6 +58,25 @@ module.exports = function(req, res) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
   }
+  else if (
+    req.body.request.type === "IntentRequest" &&
+    req.body.request.intent.name === "LastTopUp"
+  ) {
+    getLastTopUp()
+    .then(function(lastTopUp) {
+      res.json(
+        buildResponse(
+          {},
+          "<speak>" + lastTopUp.text + "</speak>",
+          lastTopUp.card,
+          true
+        )
+      );
+    })
+    .catch(function(err) {
+      res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
+    });
+  }
   else {
     res
       .status(504)
@@ -80,81 +99,6 @@ function buildResponse(session, speech, card, end) {
       shouldEndSession: !!end
     }
   };
-}
-
-function getTransactions(transactionAmount) {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
-        headers: {
-          Authorization: `Bearer ${access_token}`
-        },
-        json: true
-      },
-      function(err, res, body) {
-        let data, text, card;
-        data = body;
-        if (err || res.statusCode >= 400) {
-          console.error(res.statusCode, err);
-          return reject("Unable to get transactions!");
-        }
-
-        if (!data) {
-          return reject("Unable to get transactions!");
-        }
-
-        const transactionsText = getTransactionsText(data, transactionAmount);
-
-        if (transactionsText.length > 0) {
-          text = `Your last ${transactionAmount} transactions are: ${transactionsText}`;
-        }
-        else {
-          text = 'Sorry, no transactions available';
-        }
-
-        card = {
-          type: "Standard",
-          title: "Monzo card transactions",
-          text: text
-        };
-
-        resolve({ text, card });
-      }
-    )
-  });
-}
-
-function getTransactionsText(data, transactionAmount) {
-  let transactionsText = '';
-
-  if (data.transactions) {
-    let lastSetOfTransactions = data.transactions.slice((data.transactions.length - transactionAmount), data.transactions.length).reverse();
-
-    lastSetOfTransactions.forEach(transaction => {
-        let amountSpend = transaction.amount;
-        let transactionText = '';
-        console.log(transaction);
-        if (transaction.description === 'Top up'){
-          transactionText = `Top Up of ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
-        }
-        else if (Object.keys(transaction.counterparty).length > 0) {
-          if (transaction.amount > 0) {
-            transactionText = `Got Paid ${getCashText(amountSpend)} from ${transaction.counterparty.prefered_name} on ${dateFormatter(transaction.created)}. `;
-          }
-          else {
-            transactionText = `You paid ${transaction.counterparty.prefered_name}, ${getCashText(Math.abs(amountSpend))} on ${dateFormatter(transaction.created)}. `
-          }
-        }
-        else if (transaction.merchant != null && Object.keys(transaction.merchant).length > 0) {
-          transactionText = `Spent ${getCashText(Math.abs(amountSpend))} at ${transaction.merchant.name} on ${dateFormatter(transaction.created)}. `;
-        }
-        console.log(transactionText);
-        transactionsText += transactionText;
-    });
-  }
-
-  return transactionsText;
 }
 
 function getBalance() {
@@ -190,6 +134,139 @@ function getBalance() {
       }
     );
   });
+}
+
+function getTransactions(numberOfTransactions) {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+        json: true
+      },
+      function(err, res, body) {
+        let data, text, card;
+        data = body;
+        if (err || res.statusCode >= 400) {
+          console.error(res.statusCode, err);
+          return reject("Unable to get transactions!");
+        }
+
+        if (!data) {
+          return reject("Unable to get transactions!");
+        }
+
+        const transactionsText = getTransactionsText(data, numberOfTransactions);
+
+        if (transactionsText.length > 0) {
+          text = `Your last ${numberOfTransactions} transactions are: ${transactionsText}`;
+        }
+        else {
+          text = 'Sorry, no transactions available';
+        }
+
+        card = {
+          type: "Standard",
+          title: "Monzo card transactions",
+          text: text
+        };
+
+        resolve({ text, card });
+      }
+    )
+  });
+}
+
+function getLastTopUp() {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+        json: true
+      },
+      function(err, res, body) {
+        let data, text, card;
+        data = body;
+        if (err || res.statusCode >= 400) {
+          console.error(res.statusCode, err);
+          return reject("Unable to get last top up!");
+        }
+
+        if (!data) {
+          return reject("Unable to get last top up!");
+        }
+
+        const topUpText = getLastTopUpText(data);
+        
+        if (topUpText != null) {
+          text = topUpText;
+        } else {
+          text = "Couldn't get your last top up."
+        }
+
+        card = {
+          type: "Standard",
+          title: "Monzo card transactions",
+          text: text
+        };
+
+        resolve({ text, card });
+      }
+    )
+  });
+}
+
+function getLastTopUpText(data) {
+  let topUpText;
+
+  if (data.transactions) {
+    for (let transaction in data.transactions.reverse()) {
+      let amountSpend = transaction.amount;
+      console.log(transaction);
+      if (transaction.description === 'Top up'){
+        topUpText = `You topped up ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
+        break;
+      }
+    }
+  }
+  return topUpText;
+}
+
+function getTransactionsText(data, transactionAmount) {
+  let transactionsText = '';
+
+  if (data.transactions) {
+    let lastSetOfTransactions = data.transactions.slice((data.transactions.length - transactionAmount), data.transactions.length).reverse();
+
+    lastSetOfTransactions.forEach(transaction => {
+        let amountSpend = transaction.amount;
+        let transactionText = '';
+        console.log(transaction);
+        if (transaction.description === 'Top up'){
+          transactionText = `Top Up of ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
+        }
+        else if (Object.keys(transaction.counterparty).length > 0) {
+          if (transaction.amount > 0) {
+            transactionText = `Got Paid ${getCashText(amountSpend)} from ${transaction.counterparty.prefered_name} on ${dateFormatter(transaction.created)}. `;
+          }
+          else {
+            transactionText = `You paid ${transaction.counterparty.prefered_name}, ${getCashText(Math.abs(amountSpend))} on ${dateFormatter(transaction.created)}. `
+          }
+        }
+        else if (transaction.merchant != null && Object.keys(transaction.merchant).length > 0) {
+          transactionText = `Spent ${getCashText(Math.abs(amountSpend))} at ${transaction.merchant.name} on ${dateFormatter(transaction.created)}. `;
+        }
+        console.log(transactionText);
+        transactionsText += transactionText;
+    });
+  }
+
+  return transactionsText;
 }
 
 function getBalanceText(data) {

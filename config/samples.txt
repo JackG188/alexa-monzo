@@ -6,3 +6,7 @@ Balance  whats in my account
 Transactions get my last {amount} transactions
 Transactions show me my last {amount} purchases
 Transactions what's the last {amount} times I used my card
+
+LastTopUp What was my last top up
+LastTopUp How much did I top up last
+LastTopUp last top up?

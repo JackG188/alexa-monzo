@@ -137,7 +137,7 @@ function getTransactionsText(data, transactionAmount) {
         let transactionText = '';
         console.log(transaction);
         if (transaction.description === 'Top up'){
-          transactionText = `You Topped Up ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)} `;
+          transactionText = `You Topped Up ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
         }
         else if (Object.keys(transaction.counterparty).length > 0) {
           if (transaction.amount > 0) {
@@ -148,7 +148,7 @@ function getTransactionsText(data, transactionAmount) {
           }
         }
         else {
-          transactionText = `You spent ${getCashText(Math.abs(amountSpend))} at ${transaction.description} on ${dateFormatter(transaction.created)}. `;
+          transactionText = `You spent ${getCashText(Math.abs(amountSpend))} at ${transaction.merchant.name} on ${dateFormatter(transaction.created)}. `;
         }
         console.log(transactionText);
         transactionsText += transactionText;
@@ -170,7 +170,6 @@ function getBalance() {
       },
       function(err, res, body) {
         let data, text, card;
-        console.log('in get balance', body);
         data = body;
         if (err || res.statusCode >= 400) {
           console.error(res.statusCode, err);
@@ -195,9 +194,7 @@ function getBalance() {
 }
 
 function getBalanceText(data) {
-  console.log('in get balance', data);
   let conditions;
-
   if (data.balance) {
     conditions = getCashText(data.balance);
   }

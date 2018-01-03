@@ -140,7 +140,6 @@ function getTransactionsText(data, transactionAmount) {
         }
         else if (transaction.category === 'mondo') {
           // Catch for balance transfer between account types
-          continue;
         }
         else if (Object.keys(transaction.counterparty).length > 0) {
           if (transaction.amount > 0) {

@@ -94,7 +94,6 @@ function getTransactions(transactionAmount) {
       },
       function(err, res, body) {
         let data, text, card;
-        console.log(body);
         data = body;
         if (err || res.statusCode >= 400) {
           console.error(res.statusCode, err);
@@ -130,7 +129,7 @@ function getTransactionsText(data, transactionAmount) {
   let transactionsText;
 
   if (data.transactions) {
-    let lastSetOfTransactions = data.transactions.slice((data.transactions.length - transactionAmount), data.transactions.length);
+    let lastSetOfTransactions = data.transactions.slice((data.transactions.length - transactionAmount), data.transactions.length).reverse();
 
     lastSetOfTransactions.forEach(transaction => {
         let amountSpend = transaction.amount;

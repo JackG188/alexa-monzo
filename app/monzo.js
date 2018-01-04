@@ -245,11 +245,11 @@ function getLastTopUp() {
 function getLastTimePeriodSpend(amazonDate) {
   const start = amazonDate.startDate;
   const end = amazonDate.endDate; 
-
+  console.log(start, end);
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + `transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&before=${end}&since=${start}`,
+        url: BASE_URL + `transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&since=${start.toString}&before=${end.toString}`,
         headers: {
           Authorization: `Bearer ${access_token}`
         },

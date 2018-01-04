@@ -82,8 +82,21 @@ module.exports = function(req, res) {
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "LastSpend"
   ) {
-    console.log(req.body.request.intent.slots.duration.value);
-    console.log(new AmazonDateParser(req.body.request.intent.slots.duration.value));
+    const amazonDate = new AmazonDateParser(req.body.request.intent.slots.duration.value);
+    getLastTimePeriodSpend(amazonDate)
+    .then(function(lastSpend) {
+      res.json(
+        buildResponse(
+          {},
+          "<speak>" + lastSpend.text + "</speak>",
+          lastSpend.card,
+          true
+        )
+      );
+    })
+    .catch(function(err) {
+      res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
+    });
   }
   else {
     res
@@ -227,6 +240,70 @@ function getLastTopUp() {
       }
     )
   });
+}
+
+function getLastTimePeriodSpend(amazonDate) {
+  const start = amazonDate.startDate;
+  const end = amazonDate.endDate; 
+
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: BASE_URL + `transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&before=${end}&since=${start}`,
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+        json: true
+      },
+      function(err, res, body) {
+        let data, text, card;
+        data = body;
+        if (err || res.statusCode >= 400) {
+          console.error(res.statusCode, err);
+          return reject("Unable to get last spend!");
+        }
+
+        if (!data) {
+          return reject("Unable to get last spend!");
+        }
+
+        const lastSpendText = getLastTimePeriodSpendText(data);
+        
+        if (lastSpendText != null) {
+          text = lastSpendText;
+        } else {
+          text = "Couldn't get your last spend for the time period you provided."
+        }
+
+        card = {
+          type: "Standard",
+          title: "Monzo card transactions",
+          text: text
+        };
+
+        resolve({ text, card });
+      }
+    )
+  });
+}
+
+function getLastTimePeriodSpendText(data) {
+  let spendText;
+  let totalSpend;
+
+  if (data.transactions) {
+    for (let transaction of data.transactions) {
+      if (transaction.amount < 0) {
+        totalSpend += parseInt(transaction.amount);
+      }
+    }
+
+    if (totalSpend != null) {
+      spendText = `You spent ${getCashText(totalSpend)}`;
+    }
+  }
+
+  return spendText;
 }
 
 function getLastTopUpText(data) {

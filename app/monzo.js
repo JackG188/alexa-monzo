@@ -297,7 +297,7 @@ function getLastTimePeriodSpendText(data) {
         const amount = parseInt(transaction.amount);
         if (!isNaN(amount)) {
           console.log(amount);
-          totalSpend += amount;
+          totalSpend += Math.abs(amount);
         }
       }
     }

@@ -289,7 +289,7 @@ function getLastTimePeriodSpend(amazonDate) {
 
 function getLastTimePeriodSpendText(data) {
   let spendText;
-  let totalSpend;
+  let totalSpend = 0;
 
   if (data.transactions) {
     for (let transaction of data.transactions) {

@@ -9,4 +9,4 @@ Transactions what's the last {amount} times I used my card
 
 LastTopUp What was my last top up
 LastTopUp How much did I top up last
-LastTopUp last top up?
+LastTopUp last top up

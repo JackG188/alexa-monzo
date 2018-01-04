@@ -293,8 +293,11 @@ function getLastTimePeriodSpendText(data) {
 
   if (data.transactions) {
     for (let transaction of data.transactions) {
-      if (transaction.amount < 0 && !transaction.amount.isNaN()) {
-        totalSpend += parseInt(transaction.amount);
+      if (transaction.amount < 0) {
+        const amount = parseInt(transaction.amount);
+        if (!isNaN(amount)) {
+          totalSpend += amount;
+        }
       }
     }
 

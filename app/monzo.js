@@ -294,10 +294,12 @@ function getLastTimePeriodSpendText(data) {
   if (data.transactions) {
     for (let transaction of data.transactions) {
       if (transaction.amount < 0) {
-        const amount = parseInt(transaction.amount);
+        let amount = parseInt(transaction.amount);
         if (!isNaN(amount)) {
           console.log(amount);
+          console.log(totalSpend, 'before');
           totalSpend = totalSpend + Math.abs(amount);
+          console.log(totalSpend, 'after');
         }
       }
     }

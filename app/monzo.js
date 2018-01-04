@@ -226,7 +226,7 @@ function getLastTopUpText(data) {
 
   if (data.transactions) {
     const reversedTransactions = data.transactions.reverse();
-    for (let transaction in reversedTransactions) {
+    for (let transaction of reversedTransactions) {
       let amountSpend = transaction.amount;
       console.log(transaction);
       if (transaction.description === 'Top up'){

@@ -1,6 +1,7 @@
 "use strict";
 
-let request = require("request");
+const request = require("request");
+const AmazonDateParser = require('amazon-date-parser');
 
 const VERSION = "1.0";
 const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTUwODI3NTksImlhdCI6MTUxNTA2MTE1OSwianRpIjoidG9rXzAwMDA5U0ZVenJMdkhKV21VVkIwWGgiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.J97-04-zXuMK72ZUIeMad4OufV50pj12ekoWnUuGBn0"
@@ -76,6 +77,13 @@ module.exports = function(req, res) {
     .catch(function(err) {
       res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
     });
+  }
+  else if (
+    req.body.request.type === "IntentRequest" &&
+    req.body.request.intent.name === "LastSpend"
+  ) {
+    console.log(req.body.request.intent.slots.duration.value);
+    console.log(new AmazonDateParser(req.body.request.intent.slots.duration.value));
   }
   else {
     res

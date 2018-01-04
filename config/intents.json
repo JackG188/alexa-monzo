@@ -20,6 +20,15 @@
     },
     {
       "intent": "LastTopUp"
+    },
+    {
+      "intent": "LastSpend",
+      "slots": [
+        {
+          "name": "duration",
+          "type": "AMAZON.DATE"
+        }
+      ]
     }
   ]
 }

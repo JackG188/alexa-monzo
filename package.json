@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "alexa-verifier": "0.0.5",
+    "amazon-date-parser": "^0.1.5",
     "body-parser": "^1.15.2",
     "express": "^4.14.0"
   }

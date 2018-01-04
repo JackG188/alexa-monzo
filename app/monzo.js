@@ -303,7 +303,7 @@ function getLastTimePeriodSpendText(data) {
     }
 
     if (totalSpend != null) {
-      spendText = `You spent ${getCashText(totalSpend)}`;
+      spendText = `You spent ${getCashText(Math.abs(totalSpend))}`;
     }
   }
 

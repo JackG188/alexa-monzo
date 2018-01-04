@@ -4,7 +4,7 @@ const request = require("request");
 const AmazonDateParser = require('amazon-date-parser');
 
 const VERSION = "1.0";
-const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTUwODI3NTksImlhdCI6MTUxNTA2MTE1OSwianRpIjoidG9rXzAwMDA5U0ZVenJMdkhKV21VVkIwWGgiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.J97-04-zXuMK72ZUIeMad4OufV50pj12ekoWnUuGBn0"
+const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTUxMDQ2NzQsImlhdCI6MTUxNTA4MzA3NCwianRpIjoidG9rXzAwMDA5U0cxYXBzd3RVMWhUcGNSbk8iLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.mZ5KJvSNB3szz1_Tq_SK3MoWhMPyqDczkpkModx4Ybg"
 const BASE_URL = "https://api.monzo.com/";
 
 module.exports = function(req, res) {
@@ -249,7 +249,7 @@ function getLastTimePeriodSpend(amazonDate) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + `transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&since=${start.toString}&before=${end.toString}`,
+        url: BASE_URL + 'transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&since=' + start + '&before='+ end,
         headers: {
           Authorization: `Bearer ${access_token}`
         },

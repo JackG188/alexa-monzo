@@ -296,6 +296,7 @@ function getLastTimePeriodSpendText(data) {
       if (transaction.amount < 0) {
         const amount = parseInt(transaction.amount);
         if (!isNaN(amount)) {
+          console.log(amount);
           totalSpend += amount;
         }
       }

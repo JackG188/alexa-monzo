@@ -249,7 +249,7 @@ function getLastTimePeriodSpend(amazonDate) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + 'transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&since=' + start + '&before='+ end,
+        url: BASE_URL + 'transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&since=' + start.toISOString() + '&before='+ end.toISOString(),
         headers: {
           Authorization: `Bearer ${access_token}`
         },

@@ -259,7 +259,7 @@ function getLastTimePeriodSpend(amazonDate) {
         let data, text, card;
         data = body;
         if (err || res.statusCode >= 400) {
-          console.error(res.statusCode, err);
+          console.error(res.statusCode, err, res, body);
           return reject("Unable to get last spend!");
         }
 

@@ -297,14 +297,14 @@ function getLastTimePeriodSpendText(data) {
         const amount = parseInt(transaction.amount);
         if (!isNaN(amount)) {
           console.log(amount);
-          totalSpend += Math.abs(amount);
+          totalSpend = totalSpend + Math.abs(amount);
         }
       }
     }
 
     if (totalSpend != null) {
       console.log(totalSpend);
-      spendText = `You spent ${getCashText(Math.abs(totalSpend))}`;
+      spendText = `You spent ${getCashText(totalSpend)}`;
     }
   }
 

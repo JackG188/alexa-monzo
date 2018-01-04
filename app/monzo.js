@@ -295,6 +295,8 @@ function getLastTimePeriodSpendText(data) {
     for (let transaction of data.transactions) {
       if (transaction.amount < 0) {
         totalSpend += parseInt(transaction.amount);
+        console.log(parseInt(transaction.amount));
+        console.log(totalSpend);
       }
     }
 

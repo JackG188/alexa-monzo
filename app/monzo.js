@@ -243,8 +243,8 @@ function getLastTopUp() {
 }
 
 function getLastTimePeriodSpend(amazonDate) {
-  const start = amazonDate.startDate;
-  const end = amazonDate.endDate; 
+  const start = new Date(amazonDate.startDate);
+  const end = new Date(amazonDate.endDate); 
   console.log(start, end);
   return new Promise((resolve, reject) => {
     request(

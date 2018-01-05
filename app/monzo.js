@@ -1,10 +1,11 @@
 "use strict";
 
 const request = require("request");
-const AmazonDateParser = require('amazon-date-parser');
+const AmazonDateParser = require("amazon-date-parser");
 
 const VERSION = "1.0";
-const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTUxMDQ2NzQsImlhdCI6MTUxNTA4MzA3NCwianRpIjoidG9rXzAwMDA5U0cxYXBzd3RVMWhUcGNSbk8iLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.mZ5KJvSNB3szz1_Tq_SK3MoWhMPyqDczkpkModx4Ybg"
+const access_token =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTUxMDQ2NzQsImlhdCI6MTUxNTA4MzA3NCwianRpIjoidG9rXzAwMDA5U0cxYXBzd3RVMWhUcGNSbk8iLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.mZ5KJvSNB3szz1_Tq_SK3MoWhMPyqDczkpkModx4Ybg";
 const BASE_URL = "https://api.monzo.com/";
 
 module.exports = function(req, res) {
@@ -12,7 +13,7 @@ module.exports = function(req, res) {
     res.json(
       buildResponse(
         { dateRequested: true },
-        "<speak>Hello Jack, this is your monzo skill. Ask for your balance.</speak>",
+        "<speak>Hello, this is your Monzo skill. Ask for your balance.</speak>",
         {},
         false
       )
@@ -39,8 +40,7 @@ module.exports = function(req, res) {
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
-  } 
-  else if (
+  } else if (
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "Transactions"
   ) {
@@ -58,52 +58,49 @@ module.exports = function(req, res) {
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
-  }
-  else if (
+  } else if (
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "LastTopUp"
   ) {
     getLastTopUp()
-    .then(function(lastTopUp) {
-      res.json(
-        buildResponse(
-          {},
-          "<speak>" + lastTopUp.text + "</speak>",
-          lastTopUp.card,
-          true
-        )
-      );
-    })
-    .catch(function(err) {
-      res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
-    });
-  }
-  else if (
+      .then(function(lastTopUp) {
+        res.json(
+          buildResponse(
+            {},
+            "<speak>" + lastTopUp.text + "</speak>",
+            lastTopUp.card,
+            true
+          )
+        );
+      })
+      .catch(function(err) {
+        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
+      });
+  } else if (
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "LastSpend"
   ) {
-    const amazonDate = new AmazonDateParser(req.body.request.intent.slots.duration.value);
+    const amazonDate = new AmazonDateParser(
+      req.body.request.intent.slots.duration.value
+    );
     getLastTimePeriodSpend(amazonDate)
-    .then(function(lastSpend) {
-      res.json(
-        buildResponse(
-          {},
-          "<speak>" + lastSpend.text + "</speak>",
-          lastSpend.card,
-          true
-        )
-      );
-    })
-    .catch(function(err) {
-      res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
-    });
-  }
-  else {
-    res
-      .status(504)
-      .json({
-        message: "Sorry that Intent has not been added to our skill set"
+      .then(function(lastSpend) {
+        res.json(
+          buildResponse(
+            {},
+            "<speak>" + lastSpend.text + "</speak>",
+            lastSpend.card,
+            true
+          )
+        );
+      })
+      .catch(function(err) {
+        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
+  } else {
+    res.status(504).json({
+      message: "Sorry that Intent has not been added to our skill set"
+    });
   }
 };
 
@@ -133,18 +130,17 @@ function getBalance() {
         json: true
       },
       function(err, res, body) {
-        let data, text, card;
-        data = body;
+        let text, card;
         if (err || res.statusCode >= 400) {
           console.error(res.statusCode, err);
           return reject("Unable to get balance!");
         }
 
-        if (!data) {
+        if (!body) {
           return reject("Unable to get balance!");
         }
 
-        text = `Your balance is: ${getBalanceText(data)}`;
+        text = `Your balance is: ${getBalanceText(body)}`;
         card = {
           type: "Standard",
           title: "Monzo card balance",
@@ -161,31 +157,34 @@ function getTransactions(numberOfTransactions) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
+        url:
+          BASE_URL +
+          "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
         headers: {
           Authorization: `Bearer ${access_token}`
         },
         json: true
       },
       function(err, res, body) {
-        let data, text, card;
-        data = body;
+        let text, card;
         if (err || res.statusCode >= 400) {
           console.error(res.statusCode, err);
           return reject("Unable to get transactions!");
         }
 
-        if (!data) {
+        if (!body) {
           return reject("Unable to get transactions!");
         }
 
-        const transactionsText = getTransactionsText(data, numberOfTransactions);
+        const transactionsText = getTransactionsText(
+          body,
+          numberOfTransactions
+        );
 
         if (transactionsText.length > 0) {
           text = `Your last ${numberOfTransactions} transactions are: ${transactionsText}`;
-        }
-        else {
-          text = 'Sorry, no transactions available';
+        } else {
+          text = "Sorry, no transactions available";
         }
 
         card = {
@@ -196,7 +195,7 @@ function getTransactions(numberOfTransactions) {
 
         resolve({ text, card });
       }
-    )
+    );
   });
 }
 
@@ -204,30 +203,31 @@ function getLastTopUp() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
+        url:
+          BASE_URL +
+          "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
         headers: {
           Authorization: `Bearer ${access_token}`
         },
         json: true
       },
       function(err, res, body) {
-        let data, text, card;
-        data = body;
+        let text, card;
         if (err || res.statusCode >= 400) {
           console.error(res.statusCode, err);
           return reject("Unable to get last top up!");
         }
 
-        if (!data) {
+        if (!body) {
           return reject("Unable to get last top up!");
         }
 
-        const topUpText = getLastTopUpText(data);
-        
+        const topUpText = getLastTopUpText(body);
+
         if (topUpText != null) {
           text = topUpText;
         } else {
-          text = "Couldn't get your last top up."
+          text = "Couldn't get your last top up.";
         }
 
         card = {
@@ -238,41 +238,45 @@ function getLastTopUp() {
 
         resolve({ text, card });
       }
-    )
+    );
   });
 }
 
 function getLastTimePeriodSpend(amazonDate) {
   const start = new Date(amazonDate.startDate);
-  const end = new Date(amazonDate.endDate); 
-  console.log(start, end);
+  const end = new Date(amazonDate.endDate);
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + 'transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&since=' + start.toISOString() + '&before='+ end.toISOString(),
+        url:
+          BASE_URL +
+          "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&since=" +
+          start.toISOString() +
+          "&before=" +
+          end.toISOString(),
         headers: {
           Authorization: `Bearer ${access_token}`
         },
         json: true
       },
       function(err, res, body) {
-        let data, text, card;
-        data = body;
+        let text, card;
         if (err || res.statusCode >= 400) {
-          console.error(res.statusCode, err, res, body);
+          console.error(res.statusCode, err, res);
           return reject("Unable to get last spend!");
         }
 
-        if (!data) {
+        if (!body) {
           return reject("Unable to get last spend!");
         }
 
-        const lastSpendText = getLastTimePeriodSpendText(data);
-        
+        const lastSpendText = getLastTimePeriodSpendText(body);
+
         if (lastSpendText != null) {
           text = lastSpendText;
         } else {
-          text = "Couldn't get your last spend for the time period you provided."
+          text =
+            "Couldn't get your last spend for the time period you provided.";
         }
 
         card = {
@@ -283,7 +287,7 @@ function getLastTimePeriodSpend(amazonDate) {
 
         resolve({ text, card });
       }
-    )
+    );
   });
 }
 
@@ -294,20 +298,14 @@ function getLastTimePeriodSpendText(data) {
   if (data.transactions) {
     for (let transaction of data.transactions) {
       if (transaction.amount < 0) {
-        let amount = parseInt(transaction.amount);
+        const amount = parseInt(transaction.amount);
         if (!isNaN(amount)) {
-          console.log(amount);
-          console.log(totalSpend, 'before');
-          totalSpend = totalSpend + Math.abs(amount);
-          console.log(totalSpend, 'after');
+          totalSpend += Math.abs(amount);
         }
       }
     }
 
-    if (totalSpend != null) {
-      console.log(totalSpend);
-      spendText = `You spent ${getCashText(totalSpend)}`;
-    }
+    spendText = `You spent ${getCashText(totalSpend)}`;
   }
 
   return spendText;
@@ -319,10 +317,10 @@ function getLastTopUpText(data) {
   if (data.transactions) {
     const reversedTransactions = data.transactions.reverse();
     for (let transaction of reversedTransactions) {
-      let amountSpend = transaction.amount;
-      console.log(transaction);
-      if (transaction.description === 'Top up'){
-        topUpText = `You topped up ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
+      if (transaction.description === "Top up") {
+        topUpText = `You topped up ${getCashText(
+          transaction.amount
+        )} on ${dateFormatter(transaction.created)}. `;
         break;
       }
     }
@@ -331,31 +329,46 @@ function getLastTopUpText(data) {
 }
 
 function getTransactionsText(data, transactionAmount) {
-  let transactionsText = '';
+  let transactionsText = "";
 
   if (data.transactions) {
-    let lastSetOfTransactions = data.transactions.slice((data.transactions.length - transactionAmount), data.transactions.length).reverse();
+    const lastSetOfTransactions = data.transactions
+      .slice(
+        data.transactions.length - transactionAmount,
+        data.transactions.length
+      )
+      .reverse();
 
     lastSetOfTransactions.forEach(transaction => {
-        let amountSpend = transaction.amount;
-        let transactionText = '';
-        console.log(transaction);
-        if (transaction.description === 'Top up'){
-          transactionText = `Top Up of ${getCashText(amountSpend)} on ${dateFormatter(transaction.created)}. `;
+      const amountSpend = transaction.amount;
+      let transactionText = "";
+      console.log(transaction);
+      if (transaction.description === "Top up") {
+        transactionText = `Top Up of ${getCashText(
+          amountSpend
+        )} on ${dateFormatter(transaction.created)}. `;
+      } else if (Object.keys(transaction.counterparty).length > 0) {
+        if (transaction.amount > 0) {
+          transactionText = `Got Paid ${getCashText(amountSpend)} from ${
+            transaction.counterparty.prefered_name
+          } on ${dateFormatter(transaction.created)}. `;
+        } else {
+          transactionText = `You paid ${
+            transaction.counterparty.prefered_name
+          }, ${getCashText(Math.abs(amountSpend))} on ${dateFormatter(
+            transaction.created
+          )}. `;
         }
-        else if (Object.keys(transaction.counterparty).length > 0) {
-          if (transaction.amount > 0) {
-            transactionText = `Got Paid ${getCashText(amountSpend)} from ${transaction.counterparty.prefered_name} on ${dateFormatter(transaction.created)}. `;
-          }
-          else {
-            transactionText = `You paid ${transaction.counterparty.prefered_name}, ${getCashText(Math.abs(amountSpend))} on ${dateFormatter(transaction.created)}. `
-          }
-        }
-        else if (transaction.merchant != null && Object.keys(transaction.merchant).length > 0) {
-          transactionText = `Spent ${getCashText(Math.abs(amountSpend))} at ${transaction.merchant.name} on ${dateFormatter(transaction.created)}. `;
-        }
-        console.log(transactionText);
-        transactionsText += transactionText;
+      } else if (
+        transaction.merchant != null &&
+        Object.keys(transaction.merchant).length > 0
+      ) {
+        transactionText = `Spent ${getCashText(Math.abs(amountSpend))} at ${
+          transaction.merchant.name
+        } on ${dateFormatter(transaction.created)}. `;
+      }
+      console.log(transactionText);
+      transactionsText += transactionText;
     });
   }
 
@@ -371,33 +384,24 @@ function getBalanceText(data) {
   return conditions;
 }
 
-const getCashText = (cash) => {
+const getCashText = cash => {
   const poundsAndPence = (cash / 100)
-      .toFixed(2)
-      .toString()
-      .split(".");
+    .toFixed(2)
+    .toString()
+    .split(".");
 
-    const pounds = +poundsAndPence[0];
-    const pence = +poundsAndPence[1];
+  const pounds = +poundsAndPence[0];
+  const pence = +poundsAndPence[1];
 
-    const responseParts = [];
-    if (pounds !== 0 || pence === 0)
-      responseParts.push(
-        `${pounds} ${currencyParser["GBP"].pounds(
-          pounds
-        )}`
-      );
+  const responseParts = [];
+  if (pounds !== 0 || pence === 0)
+    responseParts.push(`${pounds} ${currencyParser["GBP"].pounds(pounds)}`);
 
-    if (pence !== 0 || pounds === 0)
-      responseParts.push(
-        `${pence} ${currencyParser["GBP"].pence(
-          pence
-        )}`
-      );
+  if (pence !== 0 || pounds === 0)
+    responseParts.push(`${pence} ${currencyParser["GBP"].pence(pence)}`);
 
-    return responseParts.join(" and ");
-    
-}
+  return responseParts.join(" and ");
+};
 
 const currencyParser = {
   GBP: {
@@ -410,7 +414,7 @@ const currencyParser = {
   }
 };
 
-const dateFormatter = (date) => {
-  const options = { weekday: 'long', month: 'long', day: 'numeric' };
-  return new Date(date).toLocaleDateString('en-GB', options);
-}
+const dateFormatter = date => {
+  const options = { weekday: "long", month: "long", day: "numeric" };
+  return new Date(date).toLocaleDateString("en-GB", options);
+};

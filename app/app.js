@@ -21,7 +21,7 @@ app.use(bodyParser.json({
 app.get('/', function(req, res) {
     res.json({ message: 'The monzo skill is up and running.', since: (new Date()).toString() });
 });
-app.post('/balance', verify, monzo);
+app.post('/monzo', verify, monzo);
 
 
 app.listen(app.get('port'), function() {

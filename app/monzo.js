@@ -36,7 +36,7 @@ module.exports = function(req, res) {
     req.body.request.intent.name === "Transactions"
   ) {
     getTransactions(req.body.request.intent.slots.amount.value)
-      .then(processSpeech(alexaOutput, true, res))
+      .then((alexaOutput) =>processSpeech(alexaOutput, true, res))
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });

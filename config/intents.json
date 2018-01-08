@@ -29,6 +29,15 @@
           "type": "AMAZON.DATE"
         }
       ]
+    },
+    {
+      "intent": "SpendByVendor",
+      "slots": [
+        {
+          "name": "vendor",
+          "type": "string"
+        }
+      ]
     }
   ]
 }

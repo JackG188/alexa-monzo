@@ -5,7 +5,7 @@ const AmazonDateParser = require("amazon-date-parser");
 
 const VERSION = "1.0";
 const access_token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTUxMDQ2NzQsImlhdCI6MTUxNTA4MzA3NCwianRpIjoidG9rXzAwMDA5U0cxYXBzd3RVMWhUcGNSbk8iLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.mZ5KJvSNB3szz1_Tq_SK3MoWhMPyqDczkpkModx4Ybg";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTU0Mjg3MzcsImlhdCI6MTUxNTQwNzEzNywianRpIjoidG9rXzAwMDA5U05uYzVBdmdlaDk5dVVqWFYiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.Gz7pCnG6qO5C4P17Ihq1hbAMh62w2P9QoAyb1I1fB94";
 const BASE_URL = "https://api.monzo.com/";
 
 module.exports = function(req, res) {
@@ -90,6 +90,25 @@ module.exports = function(req, res) {
             {},
             "<speak>" + lastSpend.text + "</speak>",
             lastSpend.card,
+            true
+          )
+        );
+      })
+      .catch(function(err) {
+        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
+      });
+  } else if (
+    req.body.request.type === "IntentRequest" &&
+    req.body.request.intent.name === "SpendByVendor"
+  ) {
+    const vendor = req.body.request.intent.slots.vendor.value;
+    getTotalVendorSpend(vendor.toLowerCase())
+      .then(function(vendorSpend) {
+        res.json(
+          buildResponse(
+            {},
+            "<speak>" + vendorSpend.text + "</speak>",
+            vendorSpend.card,
             true
           )
         );
@@ -289,6 +308,73 @@ function getLastTimePeriodSpend(amazonDate) {
       }
     );
   });
+}
+
+function getTotalVendorSpend(vendor) {
+  console.log(vendor);
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url:
+          BASE_URL +
+          "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+        json: true
+      },
+      function(err, res, body) {
+        let text, card;
+        if (err || res.statusCode >= 400) {
+          console.error(res.statusCode, err, res);
+          return reject("Unable to get the total spend for that vendor!");
+        }
+
+        if (!body) {
+          return reject("Unable to get the total spend for that vendor!");
+        }
+
+        const vendorSpendText = getTotalVendorSpendText(body, vendor);
+
+        if (vendorSpendText != null) {
+          text = vendorSpendText;
+        } else {
+          text =
+            `Couldn't get the total spend for ${vendor}.`;
+        }
+
+        card = {
+          type: "Standard",
+          title: "Monzo card transactions",
+          text: text
+        };
+
+        resolve({ text, card });
+      }
+    );
+  });
+}
+
+function getTotalVendorSpendText(data, vendor) {
+  let totalSpend = 0;
+  let vendorSpendText;
+
+  if (data.transactions) {
+    for (let transaction of data.transactions) {
+      if (transaction.merchant != null) {
+        const merchantName = transaction.merchant.name.toLowerCase();
+        console.log(merchantName);
+        if (merchantName.includes(vendor) || vendor.includes(merchantName)) {
+            const amount = parseInt(transaction.amount);
+            if (!isNaN(amount)) {
+              totalSpend += Math.abs(amount);
+            }
+        }
+      }
+    }
+
+    spendText = `At ${vendor} you spent ${getCashText(totalSpend)}`;
+  }
 }
 
 function getLastTimePeriodSpendText(data) {

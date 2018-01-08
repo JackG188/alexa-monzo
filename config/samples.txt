@@ -12,3 +12,6 @@ LastTopUp How much did I top up last
 LastTopUp last top up
 
 LastSpend How much did I spend {duration}
+LastSpend {duration} how much did I spend
+
+SpendByVendor How much have I spent at {vendor}

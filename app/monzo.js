@@ -373,7 +373,7 @@ function getTotalVendorSpendText(data, vendor) {
       }
     }
 
-    spendText = `At ${vendor} you spent ${getCashText(totalSpend)}`;
+    vendorSpendText = `At ${vendor} you spent ${getCashText(totalSpend)}`;
   }
 }
 

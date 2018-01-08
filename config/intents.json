@@ -38,6 +38,9 @@
           "type": "string"
         }
       ]
+    },
+    {
+      "intent": "ListVendors"
     }
   ]
 }

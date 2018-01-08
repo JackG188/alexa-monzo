@@ -116,6 +116,24 @@ module.exports = function(req, res) {
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
+  } else if (
+    req.body.request.type === "IntentRequest" &&
+    req.body.request.intent.name === "ListVendors"
+  ) {
+    getVendors()
+    .then(function(vendors) {
+      res.json(
+        buildResponse(
+          {},
+          "<speak>" + vendors.text + "</speak>",
+          vendors.card,
+          true
+        )
+      );
+    })
+    .catch(function(err) {
+      res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
+    });
   } else {
     res.status(504).json({
       message: "Sorry that Intent has not been added to our skill set"
@@ -136,6 +154,48 @@ function buildResponse(session, speech, card, end) {
       shouldEndSession: !!end
     }
   };
+}
+
+function getVendors() {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+        json: true
+      },
+      function(err, res, body) {
+        let text, card;
+        if (err || res.statusCode >= 400) {
+          console.error(res.statusCode, err);
+          return reject("Unable to get vendors!");
+        }
+
+        if (!body) {
+          return reject("Unable to get vendors!");
+        }
+
+        const vendorList = getListOfVendors(body);
+
+        if (vendorList != '') {
+          text = vendorList;
+        } else {
+          text =
+            "Sorry, Couldn't get the list of vendors.";
+        }
+
+        card = {
+          type: "Standard",
+          title: "Monzo card balance",
+          text: text
+        };
+
+        resolve({ text, card });
+      }
+    );
+  });
 }
 
 function getBalance() {
@@ -353,6 +413,21 @@ function getTotalVendorSpend(vendor) {
       }
     );
   });
+}
+
+function getListOfVendors(data) {
+  let vendorSpendText = '';
+
+  if (data.transactions) {
+    for (let transaction of data.transactions) {
+      if (transaction.merchant != null) {
+        const merchantName = transaction.merchant.name.toLowerCase();
+        vendorSpendText += `${merchantName}, `;
+      }
+    }
+  }
+
+  return vendorSpendText;
 }
 
 function getTotalVendorSpendText(data, vendor) {

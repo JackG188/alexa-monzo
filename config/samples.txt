@@ -15,3 +15,6 @@ LastSpend How much did I spend {duration}
 LastSpend {duration} how much did I spend
 
 SpendByVendor How much have I spent at {vendor}
+
+ListVendors Where have I been spending my money
+ListVendors What shops have I been to

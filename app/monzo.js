@@ -5,7 +5,7 @@ const AmazonDateParser = require("amazon-date-parser");
 
 const VERSION = "1.0";
 const access_token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTU0Mjg3MzcsImlhdCI6MTUxNTQwNzEzNywianRpIjoidG9rXzAwMDA5U05uYzVBdmdlaDk5dVVqWFYiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.Gz7pCnG6qO5C4P17Ihq1hbAMh62w2P9QoAyb1I1fB94";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTU0NTA4NTIsImlhdCI6MTUxNTQyOTI1MiwianRpIjoidG9rXzAwMDA5U09LVlhNemw2TFozeWNvUzEiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.ri2q2YukrzolIyzz3K8pdP6oAQBCS0BvH90InBFdtac";
 const BASE_URL = "https://api.monzo.com/";
 
 module.exports = function(req, res) {

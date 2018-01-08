@@ -334,7 +334,6 @@ function getLastTimePeriodSpend(amazonDate) {
 }
 
 function getTotalVendorSpend(vendor) {
-  console.log(vendor);
   return new Promise((resolve, reject) => {
     request(
       {
@@ -470,7 +469,6 @@ function getTransactionsText(data, transactionAmount) {
     lastSetOfTransactions.forEach(transaction => {
       const amountSpend = transaction.amount;
       let transactionText = "";
-      console.log(transaction);
       if (transaction.description === "Top up") {
         transactionText = `Top Up of ${getCashText(
           amountSpend
@@ -495,7 +493,6 @@ function getTransactionsText(data, transactionAmount) {
           transaction.merchant.name
         } on ${dateFormatter(transaction.created)}. `;
       }
-      console.log(transactionText);
       transactionsText += transactionText;
     });
   }

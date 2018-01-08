@@ -180,7 +180,13 @@ function getVendors() {
         const vendorList = getListOfVendors(body);
 
         if (vendorList != null) {
-          text = `You've visited: ${vendorList.join(' , ')}`;
+          if (vendorList.length > 1) {
+            const lastItem = vendorList.pop();
+            text = `You've visited: ${vendorList.join(', ')} and ${lastItem}`;
+          } else {
+            text = `You've visited: ${vendorList.join(', ')}`;
+          }
+
         } else {
           text =
             "Sorry, Couldn't get the list of vendors.";

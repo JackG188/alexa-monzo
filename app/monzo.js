@@ -27,16 +27,7 @@ module.exports = function(req, res) {
     req.body.request.intent.name === "Balance"
   ) {
     getBalance()
-      .then(function(balance) {
-        res.json(
-          buildResponse(
-            {},
-            "<speak>" + balance.text + "</speak>",
-            balance.card,
-            true
-          )
-        );
-      })
+      .then(processSpeech(alexaOutput, true, res))
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
@@ -45,16 +36,7 @@ module.exports = function(req, res) {
     req.body.request.intent.name === "Transactions"
   ) {
     getTransactions(req.body.request.intent.slots.amount.value)
-      .then(function(transactions) {
-        res.json(
-          buildResponse(
-            {},
-            "<speak>" + transactions.text + "</speak>",
-            transactions.card,
-            true
-          )
-        );
-      })
+      .then(processSpeech(alexaOutput, true, res))
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
@@ -63,16 +45,7 @@ module.exports = function(req, res) {
     req.body.request.intent.name === "LastTopUp"
   ) {
     getLastTopUp()
-      .then(function(lastTopUp) {
-        res.json(
-          buildResponse(
-            {},
-            "<speak>" + lastTopUp.text + "</speak>",
-            lastTopUp.card,
-            true
-          )
-        );
-      })
+      .then(processSpeech(alexaOutput, true, res))
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
@@ -84,16 +57,7 @@ module.exports = function(req, res) {
       req.body.request.intent.slots.duration.value
     );
     getLastTimePeriodSpend(amazonDate)
-      .then(function(lastSpend) {
-        res.json(
-          buildResponse(
-            {},
-            "<speak>" + lastSpend.text + "</speak>",
-            lastSpend.card,
-            true
-          )
-        );
-      })
+      .then(processSpeech(alexaOutput, true, res))
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
@@ -103,16 +67,7 @@ module.exports = function(req, res) {
   ) {
     const vendor = req.body.request.intent.slots.vendor.value;
     getTotalVendorSpend(vendor.toLowerCase())
-      .then(function(vendorSpend) {
-        res.json(
-          buildResponse(
-            {},
-            "<speak>" + vendorSpend.text + "</speak>",
-            vendorSpend.card,
-            true
-          )
-        );
-      })
+      .then(processSpeech(alexaOutput, true, res))
       .catch(function(err) {
         res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
       });
@@ -121,16 +76,7 @@ module.exports = function(req, res) {
     req.body.request.intent.name === "ListVendors"
   ) {
     getVendors()
-    .then(function(vendors) {
-      res.json(
-        buildResponse(
-          {},
-          "<speak>" + vendors.text + "</speak>",
-          vendors.card,
-          true
-        )
-      );
-    })
+    .then(processSpeech(alexaOutput, true, res))
     .catch(function(err) {
       res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
     });
@@ -140,6 +86,17 @@ module.exports = function(req, res) {
     });
   }
 };
+
+function processSpeech(alexaOutput, endConvo, res) {
+  res.json(
+    buildResponse(
+      {},
+      "<speak>" + alexaOutput.text + "</speak>",
+      alexaOutput.card,
+      endConvo
+    )
+  );
+}
 
 function buildResponse(session, speech, card, end) {
   return {

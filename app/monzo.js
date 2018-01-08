@@ -375,6 +375,8 @@ function getTotalVendorSpendText(data, vendor) {
 
     vendorSpendText = `At ${vendor} you spent ${getCashText(totalSpend)}`;
   }
+
+  return vendorSpendText;
 }
 
 function getLastTimePeriodSpendText(data) {

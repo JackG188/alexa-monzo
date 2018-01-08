@@ -1,5 +1,5 @@
 "use strict";
-
+const _ = require("lodash");
 const request = require("request");
 const AmazonDateParser = require("amazon-date-parser");
 
@@ -179,8 +179,8 @@ function getVendors() {
 
         const vendorList = getListOfVendors(body);
 
-        if (vendorList != '') {
-          text = vendorList;
+        if (vendorList != null) {
+          text = `You've visited: ${vendorList.join(' , ')}`;
         } else {
           text =
             "Sorry, Couldn't get the list of vendors.";
@@ -416,18 +416,18 @@ function getTotalVendorSpend(vendor) {
 }
 
 function getListOfVendors(data) {
-  let vendorSpendText = '';
+  let vendorSpendText = [];
 
   if (data.transactions) {
     for (let transaction of data.transactions) {
       if (transaction.merchant != null) {
         const merchantName = transaction.merchant.name.toLowerCase();
-        vendorSpendText += `${merchantName}, `;
+        vendorSpendText.push(merchantName);
       }
     }
   }
 
-  return vendorSpendText;
+  return _.uniq(vendorSpendText);
 }
 
 function getTotalVendorSpendText(data, vendor) {

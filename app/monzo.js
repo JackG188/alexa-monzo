@@ -363,7 +363,6 @@ function getTotalVendorSpendText(data, vendor) {
     for (let transaction of data.transactions) {
       if (transaction.merchant != null) {
         const merchantName = transaction.merchant.name.toLowerCase();
-        console.log(merchantName);
         if (merchantName.includes(vendor) || vendor.includes(merchantName)) {
             const amount = parseInt(transaction.amount);
             if (!isNaN(amount)) {
@@ -372,8 +371,11 @@ function getTotalVendorSpendText(data, vendor) {
         }
       }
     }
-
-    vendorSpendText = `At ${vendor} you spent ${getCashText(totalSpend)}`;
+    if (totalSpend === 0) {
+      vendorSpendText = `Sorry couldn't find any transactions for ${vendor}.`
+    } else {
+      vendorSpendText = `At ${vendor} you spent ${getCashText(totalSpend)}`;
+    }
   }
 
   return vendorSpendText;

@@ -35,12 +35,21 @@
       "slots": [
         {
           "name": "vendor",
-          "type": "string"
+          "type": "AMAZON.LocalBusiness"
         }
       ]
     },
     {
       "intent": "ListVendors"
+    },
+    {
+      "intent": "ListVendorsByDate",
+      "slots": [
+        {
+          "name": "duration",
+          "type": "AMAZON.DATE"
+        }
+      ]
     }
   ]
 }

@@ -1,4 +1,3 @@
-
 Balance  what's my balance
 Balance  how much money do I have
 Balance  whats in my account
@@ -18,3 +17,7 @@ SpendByVendor How much have I spent at {vendor}
 
 ListVendors Where have I been spending my money
 ListVendors What shops have I been to
+
+ListVendorsByDate Where did I visit {duration}
+ListVendorsByDate {duration} what shops did I go to
+ListVendorsByDate What shops did I go to {duration}

@@ -28,27 +28,21 @@ module.exports = function(req, res) {
   ) {
     getBalance()
       .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-      .catch(function(err) {
-        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
-      });
+      .catch((err) => processErrorSpeech(err, res));
   } else if (
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "Transactions"
   ) {
     getTransactions(req.body.request.intent.slots.amount.value)
       .then((alexaOutput) =>processSpeech(alexaOutput, true, res))
-      .catch(function(err) {
-        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
-      });
+      .catch((err) => processErrorSpeech(err, res));
   } else if (
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "LastTopUp"
   ) {
     getLastTopUp()
       .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-      .catch(function(err) {
-        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
-      });
+      .catch((err) => processErrorSpeech(err, res));
   } else if (
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "LastSpend"
@@ -58,9 +52,7 @@ module.exports = function(req, res) {
     );
     getLastTimePeriodSpend(amazonDate)
       .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-      .catch(function(err) {
-        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
-      });
+      .catch((err) => processErrorSpeech(err, res));
   } else if (
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "SpendByVendor"
@@ -68,18 +60,24 @@ module.exports = function(req, res) {
     const vendor = req.body.request.intent.slots.vendor.value;
     getTotalVendorSpend(vendor.toLowerCase())
       .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-      .catch(function(err) {
-        res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
-      });
+      .catch((err) => processErrorSpeech(err, res));
   } else if (
     req.body.request.type === "IntentRequest" &&
     req.body.request.intent.name === "ListVendors"
   ) {
     getVendors()
     .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-    .catch(function(err) {
-      res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
-    });
+    .catch((err) => processErrorSpeech(err, res));
+  } else if (
+    req.body.request.type === "IntentRequest" &&
+    req.body.request.intent.name === "ListVendorsByDate"
+  ) {
+    const amazonDate = new AmazonDateParser(
+      req.body.request.intent.slots.duration.value
+    );
+    getVendorsByDate(amazonDate)
+    .then((alexaOutput) => processSpeech(alexaOutput, true, res))
+    .catch((err) => processErrorSpeech(err, res));
   } else {
     res.status(504).json({
       message: "Sorry that Intent has not been added to our skill set"
@@ -87,13 +85,17 @@ module.exports = function(req, res) {
   }
 };
 
-function processSpeech(alexaOutput, endConvo, res) {
+function processErrorSpeech(err, res) {
+  res.json(buildResponse({}, "<speak>" + err + "</speak>", {}, true));
+}
+
+function processSpeech(alexaOutput, endSession, res) {
   res.json(
     buildResponse(
       {},
       "<speak>" + alexaOutput.text + "</speak>",
       alexaOutput.card,
-      endConvo
+      endSession
     )
   );
 }
@@ -111,6 +113,61 @@ function buildResponse(session, speech, card, end) {
       shouldEndSession: !!end
     }
   };
+}
+
+function getVendorsByDate(amazonDate) {
+  const start = new Date(amazonDate.startDate);
+  const end = new Date(amazonDate.endDate);
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url:
+          BASE_URL +
+          "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz&since=" +
+          start.toISOString() +
+          "&before=" +
+          end.toISOString(),
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+        json: true
+      },
+      function(err, res, body) {
+        let text, card;
+        if (err || res.statusCode >= 400) {
+          console.error(res.statusCode, err);
+          return reject("Unable to get vendors!");
+        }
+
+        if (!body) {
+          return reject("Unable to get vendors!");
+        }
+
+        const vendorList = getListOfVendors(body);
+
+        if (vendorList != null) {
+          if (vendorList.length > 1) {
+            const lastItem = vendorList.pop();
+            text = `You've visited: ${vendorList.join(', ')} and ${lastItem}`;
+          } else {
+            text = `You've visited: ${vendorList.join(', ')}`;
+          }
+
+        } else {
+          text =
+            "Sorry, Couldn't get the list of places you've spent money at.";
+        }
+
+        card = {
+          type: "Standard",
+          title: "Monzo shops visited",
+          text: text
+        };
+
+        resolve({ text, card });
+      }
+    );
+  });
 }
 
 function getVendors() {
@@ -146,12 +203,12 @@ function getVendors() {
 
         } else {
           text =
-            "Sorry, Couldn't get the list of vendors.";
+            "Sorry, Couldn't get the list of places you've spent money at.";
         }
 
         card = {
           type: "Standard",
-          title: "Monzo card balance",
+          title: "Monzo shops visited",
           text: text
         };
 
@@ -274,7 +331,7 @@ function getLastTopUp() {
 
         card = {
           type: "Standard",
-          title: "Monzo card transactions",
+          title: "Monzo last top up",
           text: text
         };
 
@@ -323,7 +380,7 @@ function getLastTimePeriodSpend(amazonDate) {
 
         card = {
           type: "Standard",
-          title: "Monzo card transactions",
+          title: "Monzo last transactions",
           text: text
         };
 

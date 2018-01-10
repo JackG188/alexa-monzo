@@ -9,7 +9,8 @@ const access_token =
 const BASE_URL = "https://api.monzo.com/";
 
 module.exports = function(req, res) {
-  if (req.body.request.type === "LaunchRequest") {
+  const requestType = req.body.request.type;
+  if (requestType === "LaunchRequest") {
     res.json(
       buildResponse(
         { dateRequested: true },
@@ -18,70 +19,64 @@ module.exports = function(req, res) {
         false
       )
     );
-  } else if (req.body.request.type === "SessionEndedRequest") {
+  } else if (requestType === "SessionEndedRequest") {
     if (req.body.request.reason === "ERROR") {
       console.error("Alexa ended the session due to an error");
     }
-  } else if (
-    req.body.request.type === "IntentRequest" &&
-    req.body.request.intent.name === "Balance"
-  ) {
-    getBalance()
-      .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-      .catch((err) => processErrorSpeech(err, res));
-  } else if (
-    req.body.request.type === "IntentRequest" &&
-    req.body.request.intent.name === "Transactions"
-  ) {
-    getTransactions(req.body.request.intent.slots.amount.value)
-      .then((alexaOutput) =>processSpeech(alexaOutput, true, res))
-      .catch((err) => processErrorSpeech(err, res));
-  } else if (
-    req.body.request.type === "IntentRequest" &&
-    req.body.request.intent.name === "LastTopUp"
-  ) {
-    getLastTopUp()
-      .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-      .catch((err) => processErrorSpeech(err, res));
-  } else if (
-    req.body.request.type === "IntentRequest" &&
-    req.body.request.intent.name === "LastSpend"
-  ) {
-    const amazonDate = new AmazonDateParser(
-      req.body.request.intent.slots.duration.value
-    );
-    getLastTimePeriodSpend(amazonDate)
-      .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-      .catch((err) => processErrorSpeech(err, res));
-  } else if (
-    req.body.request.type === "IntentRequest" &&
-    req.body.request.intent.name === "SpendByVendor"
-  ) {
-    const vendor = req.body.request.intent.slots.vendor.value;
-    getTotalVendorSpend(vendor.toLowerCase())
-      .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-      .catch((err) => processErrorSpeech(err, res));
-  } else if (
-    req.body.request.type === "IntentRequest" &&
-    req.body.request.intent.name === "ListVendors"
-  ) {
-    getVendors()
-    .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-    .catch((err) => processErrorSpeech(err, res));
-  } else if (
-    req.body.request.type === "IntentRequest" &&
-    req.body.request.intent.name === "ListVendorsByDate"
-  ) {
-    const amazonDate = new AmazonDateParser(
-      req.body.request.intent.slots.duration.value
-    );
-    getVendorsByDate(amazonDate)
-    .then((alexaOutput) => processSpeech(alexaOutput, true, res))
-    .catch((err) => processErrorSpeech(err, res));
-  } else {
-    res.status(504).json({
-      message: "Sorry that Intent has not been added to our skill set"
-    });
+  } else if (requestType === "IntentRequest") {
+    const intentName = req.body.request.intent.name;
+    if (intentName === "Balance") {
+      getBalance()
+        .then(alexaOutput => processSpeech(alexaOutput, true, res))
+        .catch(err => processErrorSpeech(err, res));
+    } else if (
+      intentName === "Transactions"
+    ) {
+      getTransactions(req.body.request.intent.slots.amount.value)
+        .then(alexaOutput => processSpeech(alexaOutput, true, res))
+        .catch(err => processErrorSpeech(err, res));
+    } else if (
+      intentName === "LastTopUp"
+    ) {
+      getLastTopUp()
+        .then(alexaOutput => processSpeech(alexaOutput, true, res))
+        .catch(err => processErrorSpeech(err, res));
+    } else if (
+      intentName === "LastSpend"
+    ) {
+      const amazonDate = new AmazonDateParser(
+        req.body.request.intent.slots.duration.value
+      );
+      getLastTimePeriodSpend(amazonDate)
+        .then(alexaOutput => processSpeech(alexaOutput, true, res))
+        .catch(err => processErrorSpeech(err, res));
+    } else if (
+      intentName === "SpendByVendor"
+    ) {
+      const vendor = req.body.request.intent.slots.vendor.value;
+      getTotalVendorSpend(vendor.toLowerCase())
+        .then(alexaOutput => processSpeech(alexaOutput, true, res))
+        .catch(err => processErrorSpeech(err, res));
+    } else if (
+      intentName === "ListVendors"
+    ) {
+      getVendors()
+        .then(alexaOutput => processSpeech(alexaOutput, true, res))
+        .catch(err => processErrorSpeech(err, res));
+    } else if (
+      intentName === "ListVendorsByDate"
+    ) {
+      const amazonDate = new AmazonDateParser(
+        req.body.request.intent.slots.duration.value
+      );
+      getVendorsByDate(amazonDate)
+        .then(alexaOutput => processSpeech(alexaOutput, true, res))
+        .catch(err => processErrorSpeech(err, res));
+    } else {
+      res.status(504).json({
+        message: "Sorry that Intent has not been added to our skill set"
+      });
+    }
   }
 };
 
@@ -148,11 +143,10 @@ function getVendorsByDate(amazonDate) {
         if (vendorList != null) {
           if (vendorList.length > 1) {
             const lastItem = vendorList.pop();
-            text = `You've visited: ${vendorList.join(', ')} and ${lastItem}`;
+            text = `You've visited: ${vendorList.join(", ")} and ${lastItem}`;
           } else {
-            text = `You've visited: ${vendorList.join(', ')}`;
+            text = `You've visited: ${vendorList.join(", ")}`;
           }
-
         } else {
           text =
             "Sorry, Couldn't get the list of places you've spent money at.";
@@ -174,7 +168,9 @@ function getVendors() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: BASE_URL + "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
+        url:
+          BASE_URL +
+          "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
         headers: {
           Authorization: `Bearer ${access_token}`
         },
@@ -196,11 +192,10 @@ function getVendors() {
         if (vendorList != null) {
           if (vendorList.length > 1) {
             const lastItem = vendorList.pop();
-            text = `You've visited: ${vendorList.join(', ')} and ${lastItem}`;
+            text = `You've visited: ${vendorList.join(", ")} and ${lastItem}`;
           } else {
-            text = `You've visited: ${vendorList.join(', ')}`;
+            text = `You've visited: ${vendorList.join(", ")}`;
           }
-
         } else {
           text =
             "Sorry, Couldn't get the list of places you've spent money at.";
@@ -418,13 +413,12 @@ function getTotalVendorSpend(vendor) {
         if (vendorSpendText != null) {
           text = vendorSpendText;
         } else {
-          text =
-            `Couldn't get the total spend for ${vendor}.`;
+          text = `Couldn't get the total spend for ${vendor}.`;
         }
 
         card = {
           type: "Standard",
-          title: "Monzo card transactions",
+          title: "Monzo Vendor Spend",
           text: text
         };
 
@@ -458,15 +452,15 @@ function getTotalVendorSpendText(data, vendor) {
       if (transaction.merchant != null) {
         const merchantName = transaction.merchant.name.toLowerCase();
         if (merchantName.includes(vendor) || vendor.includes(merchantName)) {
-            const amount = parseInt(transaction.amount);
-            if (!isNaN(amount)) {
-              totalSpend += Math.abs(amount);
-            }
+          const amount = parseInt(transaction.amount);
+          if (!isNaN(amount)) {
+            totalSpend += Math.abs(amount);
+          }
         }
       }
     }
     if (totalSpend === 0) {
-      vendorSpendText = `Sorry couldn't find any transactions for ${vendor}.`
+      vendorSpendText = `Sorry couldn't find any transactions for ${vendor}.`;
     } else {
       vendorSpendText = `At ${vendor} you spent ${getCashText(totalSpend)}`;
     }

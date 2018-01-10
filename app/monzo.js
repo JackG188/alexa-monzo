@@ -2,6 +2,7 @@
 const _ = require("lodash");
 const request = require("request");
 const AmazonDateParser = require("amazon-date-parser");
+const common = require("./common.js");
 
 const VERSION = "1.0";
 const access_token =
@@ -501,9 +502,9 @@ function getLastTransactionText(data) {
     for (let transaction of data.transactions.reverse()) {
       if (transaction.is_load === false) {
         lastTransaction = transaction;
-        transactionText = `You spent ${getCashText(Math.abs(transaction.amount))} at ${
+        transactionText = `You spent ${common.getCashText(Math.abs(transaction.amount))} at ${
           transaction.merchant.name
-        } on ${dateFormatter(transaction.created)}. `
+        } on ${common.dateFormatter(transaction.created)}. `
         break;
       }
     }
@@ -531,7 +532,7 @@ function getTotalVendorSpendText(data, vendor) {
     if (totalSpend === 0) {
       vendorSpendText = `Sorry couldn't find any transactions for ${vendor}.`;
     } else {
-      vendorSpendText = `At ${vendor} you spent ${getCashText(totalSpend)}`;
+      vendorSpendText = `At ${vendor} you spent ${common.getCashText(totalSpend)}`;
     }
   }
 
@@ -552,7 +553,7 @@ function getLastTimePeriodSpendText(data) {
       }
     }
 
-    spendText = `You spent ${getCashText(totalSpend)}`;
+    spendText = `You spent ${common.getCashText(totalSpend)}`;
   }
 
   return spendText;
@@ -565,9 +566,9 @@ function getLastTopUpText(data) {
     const reversedTransactions = data.transactions.reverse();
     for (let transaction of reversedTransactions) {
       if (transaction.description === "Top up") {
-        topUpText = `You topped up ${getCashText(
+        topUpText = `You topped up ${common.getCashText(
           transaction.amount
-        )} on ${dateFormatter(transaction.created)}. `;
+        )} on ${common.dateFormatter(transaction.created)}. `;
         break;
       }
     }
@@ -590,18 +591,18 @@ function getTransactionsText(data, transactionAmount) {
       const amountSpend = transaction.amount;
       let transactionText = "";
       if (transaction.description === "Top up") {
-        transactionText = `Top Up of ${getCashText(
+        transactionText = `Top Up of ${common.getCashText(
           amountSpend
-        )} on ${dateFormatter(transaction.created)}. `;
+        )} on ${common.dateFormatter(transaction.created)}. `;
       } else if (Object.keys(transaction.counterparty).length > 0) {
         if (transaction.amount > 0) {
-          transactionText = `Got Paid ${getCashText(amountSpend)} from ${
+          transactionText = `Got Paid ${common.getCashText(amountSpend)} from ${
             transaction.counterparty.prefered_name
-          } on ${dateFormatter(transaction.created)}. `;
+          } on ${common.dateFormatter(transaction.created)}. `;
         } else {
           transactionText = `You paid ${
             transaction.counterparty.prefered_name
-          }, ${getCashText(Math.abs(amountSpend))} on ${dateFormatter(
+          }, ${common.getCashText(Math.abs(amountSpend))} on ${common.dateFormatter(
             transaction.created
           )}. `;
         }
@@ -609,9 +610,9 @@ function getTransactionsText(data, transactionAmount) {
         transaction.merchant != null &&
         Object.keys(transaction.merchant).length > 0
       ) {
-        transactionText = `Spent ${getCashText(Math.abs(amountSpend))} at ${
+        transactionText = `Spent ${common.getCashText(Math.abs(amountSpend))} at ${
           transaction.merchant.name
-        } on ${dateFormatter(transaction.created)}. `;
+        } on ${common.dateFormatter(transaction.created)}. `;
       }
       transactionsText += transactionText;
     });
@@ -623,43 +624,8 @@ function getTransactionsText(data, transactionAmount) {
 function getBalanceText(data) {
   let conditions;
   if (data.balance) {
-    conditions = getCashText(data.balance);
+    conditions = common.getCashText(data.balance);
   }
 
   return conditions;
 }
-
-const getCashText = cash => {
-  const poundsAndPence = (cash / 100)
-    .toFixed(2)
-    .toString()
-    .split(".");
-
-  const pounds = +poundsAndPence[0];
-  const pence = +poundsAndPence[1];
-
-  const responseParts = [];
-  if (pounds !== 0 || pence === 0)
-    responseParts.push(`${pounds} ${currencyParser["GBP"].pounds(pounds)}`);
-
-  if (pence !== 0 || pounds === 0)
-    responseParts.push(`${pence} ${currencyParser["GBP"].pence(pence)}`);
-
-  return responseParts.join(" and ");
-};
-
-const currencyParser = {
-  GBP: {
-    pounds(amount) {
-      return amount === 1 ? "pound" : "pounds";
-    },
-    pence(amount) {
-      return "pence";
-    }
-  }
-};
-
-const dateFormatter = date => {
-  const options = { weekday: "long", month: "long", day: "numeric" };
-  return new Date(date).toLocaleDateString("en-GB", options);
-};

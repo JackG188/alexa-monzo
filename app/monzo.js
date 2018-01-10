@@ -139,7 +139,7 @@ function getLastTransaction() {
           return reject("Unable to get transactions!");
         }
 
-        const transactionText = getLastTransactionsText(
+        const transactionText = getLastTransactionText(
           body
         );
 
@@ -494,7 +494,7 @@ function getListOfVendors(data) {
   return _.uniq(vendorSpendText);
 }
 
-function getLastTransactionsText(data) {
+function getLastTransactionText(data) {
   let transactionText;
   let lastTransaction;
   if (data.transactions) {

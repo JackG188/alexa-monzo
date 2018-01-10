@@ -5,7 +5,7 @@ const AmazonDateParser = require("amazon-date-parser");
 
 const VERSION = "1.0";
 const access_token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTU1MzA5NjUsImlhdCI6MTUxNTUwOTM2NSwianRpIjoidG9rXzAwMDA5U1FGZmViRGNqYUphdWpSUGwiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.qCRpoLRYOmcPaq6Ky-Ild2GjUvhv_Kjobzfqk6aXpGc";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaSI6Im9hdXRoY2xpZW50XzAwMDA5NFB2SU5ER3pUM2s2dHo4anAiLCJleHAiOjE1MTU2MTc1MjAsImlhdCI6MTUxNTU5NTkyMCwianRpIjoidG9rXzAwMDA5U1NLUGtHTGdoeDFQUlJESHQiLCJ1aSI6InVzZXJfMDAwMDk2RmFETEdNcmdjQjdtVFhJZiIsInYiOiIyIn0.HdtY8B1FSkm3G47RCFLXm1GgrX7y6lCO_SByvvEviHg";
 const BASE_URL = "https://api.monzo.com/";
 
 module.exports = function(req, res) {
@@ -72,6 +72,12 @@ module.exports = function(req, res) {
       getVendorsByDate(amazonDate)
         .then(alexaOutput => processSpeech(alexaOutput, true, res))
         .catch(err => processErrorSpeech(err, res));
+    } else if (
+      intentName === "LastTransaction"
+    ) {
+      getLastTransaction()
+        .then(alexaOutput => processSpeech(alexaOutput, true, res))
+        .catch(err => processErrorSpeech(err, res));
     } else {
       res.status(504).json({
         message: "Sorry that Intent has not been added to our skill set"
@@ -108,6 +114,51 @@ function buildResponse(session, speech, card, end) {
       shouldEndSession: !!end
     }
   };
+}
+
+function getLastTransaction() {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url:
+          BASE_URL +
+          "transactions?expand[]=merchant&account_id=acc_00009RwlYFxmBrRmHYTLKz",
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+        json: true
+      },
+      function(err, res, body) {
+        let text, card;
+        if (err || res.statusCode >= 400) {
+          console.error(res.statusCode, err);
+          return reject("Unable to get transactions!");
+        }
+
+        if (!body) {
+          return reject("Unable to get transactions!");
+        }
+
+        const transactionText = getLastTransactionsText(
+          body
+        );
+
+        if (transactionText != null) {
+          text = `Your last transaction was: ${transactionText}`;
+        } else {
+          text = "Sorry couldn't get your last transaction.";
+        }
+
+        card = {
+          type: "Standard",
+          title: "Monzo card transactions",
+          text: text
+        };
+
+        resolve({ text, card });
+      }
+    );
+  });
 }
 
 function getVendorsByDate(amazonDate) {
@@ -441,6 +492,24 @@ function getListOfVendors(data) {
   }
 
   return _.uniq(vendorSpendText);
+}
+
+function getLastTransactionsText(data) {
+  let transactionText;
+  let lastTransaction;
+  if (data.transactions) {
+    for (let transaction of data.transactions.reverse()) {
+      if (transaction.is_load === false) {
+        lastTransaction = transaction;
+        transactionText = `You spent ${getCashText(Math.abs(transaction.amount))} at ${
+          transaction.merchant.name
+        } on ${dateFormatter(transaction.created)}. `
+        break;
+      }
+    }
+  }
+
+  return transactionText;
 }
 
 function getTotalVendorSpendText(data, vendor) {

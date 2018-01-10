@@ -21,3 +21,6 @@ ListVendors What shops have I been to
 ListVendorsByDate Where did I visit {duration}
 ListVendorsByDate {duration} what shops did I go to
 ListVendorsByDate What shops did I go to {duration}
+
+LastTransaction What was the last thing I bought
+LastTransaction What did I spend my money on last
